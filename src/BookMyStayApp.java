@@ -211,3 +211,63 @@ class BookingRequestQueue {
         return !requestQueue.isEmpty();
     }
 }
+
+// ===========================
+// UC6: Reservation Confirmation & Room Allocation
+// ===========================
+
+// BookingService handles allocation of rooms from queued requests
+class BookingService {
+
+    private RoomInventory inventory;
+    private Map<String, Set<String>> allocatedRooms;
+
+    public BookingService(RoomInventory inventory) {
+        this.inventory = inventory;
+        allocatedRooms = new HashMap<>();
+    }
+
+    // Process a booking request
+    public boolean allocateRoom(Reservation reservation) {
+        String roomType = reservation.getRoomType();
+        int available = inventory.getAvailability(roomType);
+
+        if (available <= 0) {
+            System.out.println("No available " + roomType + " for " + reservation.getGuestName());
+            return false;
+        }
+
+        // Generate unique room ID
+        String roomId = roomType.substring(0, 1).toUpperCase() + "-" + UUID.randomUUID().toString().substring(0, 5);
+
+        // Initialize set for room type if absent
+        allocatedRooms.putIfAbsent(roomType, new HashSet<>());
+
+        Set<String> roomSet = allocatedRooms.get(roomType);
+
+        if (roomSet.contains(roomId)) {
+            System.out.println("Room ID collision! This should never happen.");
+            return false;
+        }
+
+        // Assign room
+        roomSet.add(roomId);
+
+        // Update inventory
+        inventory.updateAvailability(roomType, available - 1);
+
+        System.out.println("Reservation Confirmed for " + reservation.getGuestName()
+                + " | Room Type: " + roomType
+                + " | Room ID: " + roomId);
+
+        return true;
+    }
+
+    // Display all allocated rooms
+    public void displayAllocatedRooms() {
+        System.out.println("\nAllocated Rooms:");
+        for (String roomType : allocatedRooms.keySet()) {
+            System.out.println(roomType + ": " + allocatedRooms.get(roomType));
+        }
+    }
+}
