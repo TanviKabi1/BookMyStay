@@ -1,5 +1,8 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedList;
+import java.util.Queue;
+
 
 public class BookMyStayApp {
 
@@ -164,5 +167,47 @@ class RoomSearchService {
         else if (room instanceof DoubleRoom) return "Double";
         else if (room instanceof SuiteRoom) return "Suite";
         else return "";
+    }
+}
+
+// ===========================
+// UC5: Booking Request (First-Come-First-Served)
+// ===========================
+
+class Reservation {
+    private String guestName;
+    private String roomType;
+
+    public Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getGuestName() { return guestName; }
+    public String getRoomType() { return roomType; }
+}
+
+// Queue to manage booking requests in FIFO order
+class BookingRequestQueue {
+
+    private Queue<Reservation> requestQueue;
+
+    public BookingRequestQueue() {
+        requestQueue = new LinkedList<>();
+    }
+
+    // Add booking request to queue
+    public void addRequest(Reservation reservation) {
+        requestQueue.offer(reservation);
+    }
+
+    // Retrieve and remove next request
+    public Reservation getNextRequest() {
+        return requestQueue.poll();
+    }
+
+    // Check if requests are pending
+    public boolean hasPendingRequests() {
+        return !requestQueue.isEmpty();
     }
 }
