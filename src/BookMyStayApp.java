@@ -1,8 +1,5 @@
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Stack;
+import java.io.*;
+import java.util.*;
 
 public class BookMyStayApp {
 
@@ -348,7 +345,7 @@ class BookingRequestQueue {
 
 // Shared inventory of rooms
 class RoomInventory {
-    private Map<String, Integer> inventory = new HashMap<>();
+    private final Map<String, Integer> inventory = new HashMap<>();
 
     public RoomInventory() {
         inventory.put("Single Room", 5);
@@ -390,9 +387,9 @@ class RoomAllocationService {
 
 // Runnable processor for concurrent bookings
 class ConcurrentBookingProcessor implements Runnable {
-    private BookingRequestQueue bookingQueue;
-    private RoomInventory inventory;
-    private RoomAllocationService allocationService;
+    private final BookingRequestQueue bookingQueue;
+    private final RoomInventory inventory;
+    private final RoomAllocationService allocationService;
 
     public ConcurrentBookingProcessor(BookingRequestQueue bookingQueue,
                                       RoomInventory inventory,
@@ -417,4 +414,48 @@ class ConcurrentBookingProcessor implements Runnable {
         }
     }
 }
+
+
+class FilePersistenceService {
+
+    public void saveInventory(RoomInventory inventory, String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            Map<String, Integer> currentInventory = inventory.getInventory();
+
+            for (Map.Entry<String, Integer> entry : currentInventory.entrySet()) {
+                // Formatting as roomType-availableCount
+                writer.write(entry.getKey() + "-" + entry.getValue());
+                writer.newLine();
+            }
+            System.out.println("Inventory saved successfully.");
+        } catch (IOException e) {
+            System.out.println("Error saving inventory: " + e.getMessage());
+        }
+    }
+
+    public void loadInventory(RoomInventory inventory, String filePath) {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            System.out.println("No valid inventory data found. Starting fresh.");
+            return;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("-");
+                if (parts.length == 2) {
+                    String roomType = parts[0];
+                    int count = Integer.parseInt(parts[1]);
+
+                    // Directly updating the map inside the inventory object
+                    inventory.getInventory().put(roomType, count);
+                }
+            }
+        } catch (IOException | NumberFormatException e) {
+            System.out.println("Error during system recovery: " + e.getMessage());
+        }
+    }
+}
+
 
