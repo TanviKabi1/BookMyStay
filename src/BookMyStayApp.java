@@ -310,3 +310,111 @@ class UseCase10Demo {
         System.out.println("\n--- End of Use Case 10 Demo ---\n");
     }
 }
+
+class BookingRequest {
+    private String guestName;
+    private String roomType;
+
+    public BookingRequest(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+}
+
+// Queue of booking requests
+class BookingRequestQueue {
+    private Queue<BookingRequest> queue = new LinkedList<>();
+
+    public synchronized void addRequest(BookingRequest request) {
+        queue.offer(request);
+    }
+
+    public synchronized BookingRequest getNextRequest() {
+        return queue.poll();
+    }
+
+    public synchronized boolean isEmpty() {
+        return queue.isEmpty();
+    }
+}
+
+// Shared inventory of rooms
+class RoomInventory {
+    private Map<String, Integer> inventory = new HashMap<>();
+
+    public RoomInventory() {
+        inventory.put("Single Room", 5);
+        inventory.put("Double Room", 3);
+        inventory.put("Suite Room", 2);
+    }
+
+    public synchronized boolean allocate(String roomType) {
+        int available = inventory.getOrDefault(roomType, 0);
+        if (available > 0) {
+            inventory.put(roomType, available - 1);
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized void release(String roomType) {
+        int available = inventory.getOrDefault(roomType, 0);
+        inventory.put(roomType, available + 1);
+    }
+
+    public synchronized Map<String, Integer> getInventory() {
+        return new HashMap<>(inventory);
+    }
+}
+
+// Handles allocation logic
+class RoomAllocationService {
+    public void allocateRoom(BookingRequest request, RoomInventory inventory) {
+        if (inventory.allocate(request.getRoomType())) {
+            System.out.println("Booking confirmed for Guest: " + request.getGuestName() +
+                    ", Room Type: " + request.getRoomType());
+        } else {
+            System.out.println("Booking failed for Guest: " + request.getGuestName() +
+                    " -> " + request.getRoomType() + " (No availability)");
+        }
+    }
+}
+
+// Runnable processor for concurrent bookings
+class ConcurrentBookingProcessor implements Runnable {
+    private BookingRequestQueue bookingQueue;
+    private RoomInventory inventory;
+    private RoomAllocationService allocationService;
+
+    public ConcurrentBookingProcessor(BookingRequestQueue bookingQueue,
+                                      RoomInventory inventory,
+                                      RoomAllocationService allocationService) {
+        this.bookingQueue = bookingQueue;
+        this.inventory = inventory;
+        this.allocationService = allocationService;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            BookingRequest request;
+            synchronized (bookingQueue) {
+                if (bookingQueue.isEmpty()) break;
+                request = bookingQueue.getNextRequest();
+            }
+
+            synchronized (inventory) {
+                allocationService.allocateRoom(request, inventory);
+            }
+        }
+    }
+}
+
