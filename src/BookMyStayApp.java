@@ -200,30 +200,47 @@ class BookingValidator {
     }
 }
 
-public class UseCase9Demo {
-    public static void main(String[] args) {
+// ---------- Use Case 9: Error Handling & Validation Demo ----------
 
-        int singleAvailable = 5;
-        String roomType = "Single Room"; // Example input
-        double addOnCost = 500;          // Example add-on
+class UseCase9Demo {
+
+    // This method simulates bookings with error handling
+    public static void demo() {
+        System.out.println("\n--- Use Case 9: Error Handling & Validation ---\n");
 
         try {
-            // Validate booking
-            BookingValidator.validateRoomType(roomType);
-            BookingValidator.validateAvailability(singleAvailable);
-            BookingValidator.validateAddOnCost(addOnCost);
+            // Valid room
+            BookingValidator.validateRoomType("Single Room");
+            System.out.println("Room type 'Single Room' is valid.");
 
-            // Proceed with booking
-            singleAvailable--; // decrement after successful validation
-            System.out.println("Booking confirmed for " + roomType);
-            System.out.println("Remaining rooms: " + singleAvailable);
-            System.out.println("Add-On Cost: " + addOnCost);
-
+            // Invalid room
+            BookingValidator.validateRoomType("King Room"); // should throw exception
         } catch (InvalidBookingException e) {
-            System.err.println("Booking failed: " + e.getMessage());
+            System.out.println("Caught error: " + e.getMessage());
         }
 
-        // System continues running safely
-        System.out.println("System continues running...");
+        try {
+            // Valid availability
+            BookingValidator.validateAvailability(3);
+            System.out.println("Room availability is valid.");
+
+            // No availability
+            BookingValidator.validateAvailability(0); // should throw exception
+        } catch (InvalidBookingException e) {
+            System.out.println("Caught error: " + e.getMessage());
+        }
+
+        try {
+            // Valid add-on cost
+            BookingValidator.validateAddOnCost(200.0);
+            System.out.println("Add-on cost is valid.");
+
+            // Negative add-on cost
+            BookingValidator.validateAddOnCost(-50.0); // should throw exception
+        } catch (InvalidBookingException e) {
+            System.out.println("Caught error: " + e.getMessage());
+        }
+
+        System.out.println("\n--- End of Use Case 9 Demo ---\n");
     }
 }
