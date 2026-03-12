@@ -131,3 +131,40 @@ class AddOnServiceManager {
         return total;
     }
 }
+class Discount {
+    private String reservationId;
+    private double percent; // e.g., 10.0 for 10%
+
+    public Discount(String reservationId, double percent) {
+        this.reservationId = reservationId;
+        this.percent = percent;
+    }
+
+    public double getPercent() {
+        return percent;
+    }
+
+    public String getReservationId() {
+        return reservationId;
+    }
+}
+
+class DiscountManager {
+    private Map<String, Discount> discounts;
+
+    public DiscountManager() {
+        discounts = new HashMap<>();
+    }
+
+    public void applyDiscount(String reservationId, double percent) {
+        discounts.put(reservationId, new Discount(reservationId, percent));
+    }
+
+    public double calculateDiscountedTotal(double originalTotal, String reservationId) {
+        Discount discount = discounts.get(reservationId);
+        if (discount != null) {
+            return originalTotal * (1 - discount.getPercent() / 100);
+        }
+        return originalTotal;
+    }
+}
