@@ -168,3 +168,62 @@ class DiscountManager {
         return originalTotal;
     }
 }
+class InvalidBookingException extends Exception {
+    public InvalidBookingException(String message) {
+        super(message);
+    }
+}
+
+class BookingValidator {
+
+    // Validate room type
+    public static void validateRoomType(String roomType) throws InvalidBookingException {
+        if (!roomType.equals("Single Room") &&
+                !roomType.equals("Double Room") &&
+                !roomType.equals("Suite Room")) {
+            throw new InvalidBookingException("Invalid room type: " + roomType);
+        }
+    }
+
+    // Validate availability
+    public static void validateAvailability(int availableRooms) throws InvalidBookingException {
+        if (availableRooms <= 0) {
+            throw new InvalidBookingException("No rooms available for booking.");
+        }
+    }
+
+    // Validate add-on cost (example)
+    public static void validateAddOnCost(double cost) throws InvalidBookingException {
+        if (cost < 0) {
+            throw new InvalidBookingException("Add-On cost cannot be negative: " + cost);
+        }
+    }
+}
+
+public class UseCase9Demo {
+    public static void main(String[] args) {
+
+        int singleAvailable = 5;
+        String roomType = "Single Room"; // Example input
+        double addOnCost = 500;          // Example add-on
+
+        try {
+            // Validate booking
+            BookingValidator.validateRoomType(roomType);
+            BookingValidator.validateAvailability(singleAvailable);
+            BookingValidator.validateAddOnCost(addOnCost);
+
+            // Proceed with booking
+            singleAvailable--; // decrement after successful validation
+            System.out.println("Booking confirmed for " + roomType);
+            System.out.println("Remaining rooms: " + singleAvailable);
+            System.out.println("Add-On Cost: " + addOnCost);
+
+        } catch (InvalidBookingException e) {
+            System.err.println("Booking failed: " + e.getMessage());
+        }
+
+        // System continues running safely
+        System.out.println("System continues running...");
+    }
+}
