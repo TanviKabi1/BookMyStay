@@ -2,6 +2,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Stack;
 
 public class BookMyStayApp {
 
@@ -242,5 +243,70 @@ class UseCase9Demo {
         }
 
         System.out.println("\n--- End of Use Case 9 Demo ---\n");
+    }
+}
+
+class UseCase10Demo {
+
+    // Inventory counts for demonstration
+    private static Map<String, Integer> inventory = new HashMap<>();
+    private static Stack<String> cancelledReservations = new Stack<>();
+    private static Map<String, String> reservationToRoom = new HashMap<>();
+
+    static {
+        inventory.put("Single Room", 5);
+        inventory.put("Double Room", 3);
+        inventory.put("Suite Room", 2);
+    }
+
+    // Simulate confirming a booking
+    public static void confirmBooking(String reservationId, String roomType) {
+        Integer available = inventory.get(roomType);
+        if (available == null || available <= 0) {
+            System.out.println("Cannot book " + roomType + " for " + reservationId + " — no availability.");
+            return;
+        }
+        inventory.put(roomType, available - 1);
+        reservationToRoom.put(reservationId, roomType);
+        System.out.println("Booking confirmed: " + reservationId + " -> " + roomType);
+    }
+
+    // Cancel a booking with rollback
+    public static void cancelBooking(String reservationId) {
+        String roomType = reservationToRoom.get(reservationId);
+        if (roomType == null) {
+            System.out.println("Cannot cancel " + reservationId + " — reservation does not exist.");
+            return;
+        }
+
+        // Restore inventory
+        inventory.put(roomType, inventory.get(roomType) + 1);
+
+        // Track cancelled reservation
+        cancelledReservations.push(reservationId);
+
+        // Remove reservation mapping
+        reservationToRoom.remove(reservationId);
+
+        System.out.println("Booking cancelled: " + reservationId + " -> " + roomType);
+        System.out.println("Updated inventory for " + roomType + ": " + inventory.get(roomType));
+    }
+
+    // Demo method
+    public static void demo() {
+        System.out.println("\n--- Use Case 10: Booking Cancellation & Inventory Rollback ---\n");
+
+        // Confirm some bookings
+        confirmBooking("Res-101", "Single Room");
+        confirmBooking("Res-102", "Double Room");
+        confirmBooking("Res-103", "Suite Room");
+
+        // Attempt cancellations
+        cancelBooking("Res-102"); // valid cancellation
+        cancelBooking("Res-999"); // invalid cancellation
+        cancelBooking("Res-101"); // valid cancellation
+
+        System.out.println("\nCancelled reservations stack (LIFO order): " + cancelledReservations);
+        System.out.println("\n--- End of Use Case 10 Demo ---\n");
     }
 }
