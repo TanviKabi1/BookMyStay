@@ -1,3 +1,8 @@
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+
 public class BookMyStayApp {
 
     public static void main(String[] args) {
@@ -87,5 +92,42 @@ class SuiteRoom extends Room {
 
     public String getRoomType() {
         return "Suite Room";
+    }
+}
+
+
+class AddOnService {
+    private String serviceName;
+    private double cost;
+
+    public AddOnService(String serviceName, double cost) {
+        this.serviceName = serviceName;
+        this.cost = cost;
+    }
+
+    public String getServiceName() { return serviceName; }
+    public double getCost() { return cost; }
+}
+
+class AddOnServiceManager {
+    private Map<String, List<AddOnService>> servicesByReservation;
+
+    public AddOnServiceManager() {
+        servicesByReservation = new HashMap<>();
+    }
+
+    public void addService(String reservationId, AddOnService service) {
+        List<AddOnService> services = servicesByReservation.getOrDefault(reservationId, new ArrayList<>());
+        services.add(service);
+        servicesByReservation.put(reservationId, services);
+    }
+
+    public double calculateTotalServiceCost(String reservationId) {
+        double total = 0.0;
+        List<AddOnService> services = servicesByReservation.get(reservationId);
+        if (services != null) {
+            for (AddOnService s : services) total += s.getCost();
+        }
+        return total;
     }
 }
